@@ -13,12 +13,13 @@ int debug; // set from conf file at runtime
 #define DEBUG_I(fmt,...) print(fmt, ...)
 #endif
 
-//create json object
-// input parameter:
-//  jsRet: output json.
-//  key: create json object with key.
-//  value: the value will be set
-
+/*
+create json object
+    Input parameter:
+    jsRet: output json.
+    key: create json object with key.
+    value: the value will be set
+*/
 static inline uint8_t jsonCreateObject(json_t **jsRet, const char *key, uint8_t value)
 {
     json_t *obj = json_object();
@@ -34,15 +35,27 @@ static inline uint8_t jsonCreateObject(json_t **jsRet, const char *key, uint8_t 
     return RET_OK;
 }
 
+/*
+Function:
+    Parameter:
+    root_js : input json object
+    key     : key of json object need to get
+    jsRet   : json bject that will be returned.
+*/
 static inline uint8_t jsonGetSubObject(json_t *root_js, char *key, json_t **jsRet)
 {
-    if (!key)
+    if(!key)
     {
         printf("[%s-%d] Invalid key for seach \n", __func__, __LINE__);
         return RET_ERR;
     }
 
-    if(root_js)
+    if (!root_js)
+    {
+        printf("[%s-%d] Invalid Input object \n", __func__, __LINE__);
+        return RET_ERR;
+    }
+    else
     {
         *jsRet = json_object_get(root_js, key);
         if(!(*jsRet))
@@ -51,23 +64,31 @@ static inline uint8_t jsonGetSubObject(json_t *root_js, char *key, json_t **jsRe
             return RET_ERR;
         }
     }
-    else
-    {
-        printf("[%s-%d] Invalid Input object \n", __func__, __LINE__);
-        return RET_ERR;
-    }
 
     return RET_OK;
 }
 
-static inline uint8_t jsonObjectGetIntegerValue(json_t *root_js, char *key)
+/*
+Function:
+    Parameter:
+    root_js : input json object
+    key     : key of json object need to get
+    retVal  : interger value will be returned.
+*/
+static inline uint8_t jsonObjectGetIntegerValue(json_t *root_js, char *key, uint32_t *retVal)
 {
     uint8_t ret;
     json_t *js_check = NULL;
 
+    if (!key)
+    {
+         printf("[%s-%d] Invalid key object\n", __func__, __LINE__);
+         return RET_ERR;
+    }
+
     if(!root_js)
     {
-        printf("[%s-%d] Invalid Input object\n", __func__, __LINE__);
+        printf("[%s-%d] Invalid Input json object\n", __func__, __LINE__);
         return RET_ERR;
     }
 
@@ -75,17 +96,24 @@ static inline uint8_t jsonObjectGetIntegerValue(json_t *root_js, char *key)
     if(!js_check)
     {
         printf("Could not get_object, temporary assign '0' value\n");
-        ret = 0;
+        return RET_ERR;
     }
     else
-        ret = json_integer_value(js_check);
+        (*retVal) = json_integer_value(js_check);
 
-    return ret;
+    return RET_OK;
 }
 
-static inline uint8_t jsonArrayGetIntegerValue(json_t *root_arr, uint8_t index)
+/*
+Function:
+    Parameter:
+    root_js : input json array
+    index   : key of json object need to get
+    retVal  : interger value will be returned.
+*/
+static inline uint8_t jsonArrayGetIntegerValue(json_t *root_arr, uint8_t index, uint32_t *retVal)
 {
-    uint8_t ret = -1;
+    uint8_t ret ;
     json_t *js_check = NULL;
 
     if (root_arr)
@@ -94,14 +122,26 @@ static inline uint8_t jsonArrayGetIntegerValue(json_t *root_arr, uint8_t index)
         if(!js_check)
         {
             printf("Could not get js array \n");
-            ret = -1;
+            ret = RET_ERR;
         }
         else
-            ret = json_integer_value(js_check);
+            (*retVal) = json_integer_value(js_check);
     }
-    return ret;
+    else
+    {
+        printf("[%s-%d] Invalid Input json object\n", __func__, __LINE__);
+        return RET_ERR;
+    }
+
+    return RET_OK;
 }
 
+/*
+Function:
+    Parameter:
+    jsRet   : json array that will be returned.
+    value   : Input value to set new
+*/
 uint8_t jsonCreateArray(json_t **jsRet, uint8_t value)
 {
     json_t *js_arr = json_array();
@@ -110,6 +150,7 @@ uint8_t jsonCreateArray(json_t **jsRet, uint8_t value)
         printf("Could not create object \n");
         return RET_ERR;
     }
+
     json_array_append_new(js_arr, json_integer(value));
 
     *jsRet = js_arr;
