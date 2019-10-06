@@ -116,9 +116,9 @@ static inline uint8_t jsonArrayGetIntegerValue(json_t *root_arr, uint8_t index, 
     uint8_t ret ;
     json_t *js_check = NULL;
 
-    if (root_arr)
+    if (jsRootArr)
     {
-        js_check = json_array_get(root_arr, index);
+        js_check = json_array_get(jsRootArr, index);
         if(!js_check)
         {
             printf("Could not get js array \n");
