@@ -137,7 +137,7 @@ static inline uint8_t jsonArrayGetIntegerValue(json_t *root_arr, uint8_t index, 
 }
 
 /*
-Function:
+Function: Create and append new json array
     Parameter:
     jsRet   : json array that will be returned.
     value   : Input value to set new
@@ -154,6 +154,58 @@ uint8_t jsonCreateArray(json_t **jsRet, uint8_t value)
     json_array_append_new(js_arr, json_integer(value));
 
     *jsRet = js_arr;
+    return RET_OK;
+}
+
+/*
+Function: Append new value into existed json array
+    Parameter:
+    jsRet   : json array that will be returned.
+    value   : Input value to set new
+*/
+uint8_t jsonArrayAppend(json_t **jsRet, uint8_t value)
+{
+    if (!jsRet)
+    {
+        printf("Could not create object \n");
+        return RET_ERR;
+    }
+
+    json_array_append_new(jsRet, json_integer(value));
+    if (0 == json_array_size(*jsRet))
+    {
+        printf("[%s-%d Apped new value failed \n]", __func__, __LINE__);
+        return RET_ERR;
+    }
+
+    return RET_OK;
+}
+
+/*
+Function: Load json file and return the json object
+Parameter:
+    fname : the json file name
+    retJson:    return the json
+*/
+uint8_t jsonLoadFIle(const char* fileName, json_t **retJs)
+{
+    json_t *f_obj;
+    json_error_t error;
+
+    if (!fileName)
+    {
+        printf("[%s-%d] Invalid input file name \n", __func__, __LINE__);
+        return RET_ERR;
+    }
+
+    f_obj = json_load_file(fileName, 0 , &error);
+    if (!f_obj)
+    {
+        printf("[%s-%d] Failed to load json file (file name: %s ) \n", __func__, __LINE__, fileName);
+        return RET_ERR;
+    }
+
+    (*retJs) = f_obj;
     return RET_OK;
 }
 
