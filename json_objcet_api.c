@@ -61,7 +61,6 @@ static inline uint8_t jsonObjectSetInterger(json_t *jsRet, const char *key, uint
     }
 
     json_object_set_new(jsRet, key, jsValue);
-
     return RET_OK;
 }
 
@@ -167,12 +166,11 @@ static inline uint8_t jsonArrayGetIntegerValue(json_t *jsRootArr, uint8_t index,
 }
 
 /*
-Function: Create and append new json array
+Function: Create new json array
     Parameter:
     jsRet   : json array that will be returned.
-    value   : Input value to set new
 */
-uint8_t jsonCreateArray(json_t **jsRet, uint8_t value)
+uint8_t jsonCreateArray(json_t **jsRet)
 {
     json_t *js_arr = json_array();
     if (!js_arr)
@@ -181,35 +179,66 @@ uint8_t jsonCreateArray(json_t **jsRet, uint8_t value)
         return RET_ERR;
     }
 
-    json_array_append_new(js_arr, json_integer(value));
-
     *jsRet = js_arr;
     return RET_OK;
 }
 
 /*
-Function: Append new value into existed json array
+Function: Append new json array
     Parameter:
     jsRet   : json array that will be returned.
     value   : Input value to set new
 */
-uint8_t jsonArrayAppend(json_t **jsRet, uint8_t value)
+uint8_t jsonArrayAppendIntegerValue(json_t *jsRet, uint8_t value)
 {
+    json_t *js_integer = NULL;
+
     if (!jsRet)
     {
-        printf("Could not create object \n");
+        printf("Could not process with NULL object \n");
         return RET_ERR;
     }
 
-    json_array_append_new(jsRet, json_integer(value));
-    if (0 == json_array_size(*jsRet))
+    js_integer = json_integer(value);
+    if(NULL ==  js_integer)
+    {
+        return RET_ERR;
+    }
+
+    json_array_append_new(jsRet, js_integer);
+    if (0 == json_array_size(jsRet))
     {
         printf("[%s-%d Apped new value failed \n]", __func__, __LINE__);
+        json_decref(js_integer);
         return RET_ERR;
     }
 
     return RET_OK;
 }
+
+// /*
+// Function: Append new value into existed json array
+//     Parameter:
+//     jsRet   : json array that will be returned.
+//     value   : Input value to set new
+// */
+// uint8_t jsonArrayAppend(json_t *jsRet, uint8_t value)
+// {
+//     if (!jsRet)
+//     {
+//         printf("Could not create object \n");
+//         return RET_ERR;
+//     }
+
+//     json_array_append_new(jsRet, json_integer(value));
+//     if (0 == json_array_size(*jsRet))
+//     {
+//         printf("[%s-%d Apped new value failed \n]", __func__, __LINE__);
+//         return RET_ERR;
+//     }
+
+//     return RET_OK;
+// }
 
 /*
 Function: Load json file and return the json object
@@ -242,6 +271,7 @@ uint8_t jsonLoadFIle(const char* fileName, json_t **retJs)
 void main()
 {
     json_t *js_obj;
+    json_t  *js_arr;
     char *buff;
     uint8_t ret;
     uint8_t tmp = 124;
@@ -264,6 +294,22 @@ void main()
         printf("Failed to create json object \n");
     }
 
-    json_decref(js_obj);
+    ret = jsonCreateArray(&js_arr);
+    if(RET_ERR == ret)
+        goto clean_mem;
+
+    ret = jsonArrayAppendIntegerValue(js_arr, tmp);
+    if(RET_ERR == ret)
+        goto clean_mem;
+
+    buff = json_dumps(js_arr, 0);
+    printf("The json array value: %s \n", buff);
+    free(buff);
+
+clean_mem:
+    if(js_obj)
+        json_decref(js_obj);
+    if(js_arr)
+        json_decref(js_arr);
     return;
 }
