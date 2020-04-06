@@ -111,7 +111,7 @@ Function:
     index   : key of json object need to get
     retVal  : interger value will be returned.
 */
-static inline uint8_t jsonArrayGetIntegerValue(json_t *root_arr, uint8_t index, uint32_t *retVal)
+static inline uint8_t jsonArrayGetIntegerValue(json_t *jsRootArr, uint8_t index, uint32_t *retVal)
 {
     uint8_t ret ;
     json_t *js_check = NULL;
