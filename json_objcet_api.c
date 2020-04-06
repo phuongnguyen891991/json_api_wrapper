@@ -20,7 +20,7 @@ create json object
     key: create json object with key.
     value: the value will be set
 */
-static inline uint8_t jsonCreateObject(json_t **jsRet, const char *key, uint8_t value)
+static inline uint8_t jsonCreateObject(json_t **jsRet)
 {
     json_t *obj = json_object();
     if (!obj)
@@ -28,10 +28,40 @@ static inline uint8_t jsonCreateObject(json_t **jsRet, const char *key, uint8_t 
         printf("Could not create object \n");
         return RET_ERR;
     }
+    else
+    {
+        *jsRet = obj;
+        return RET_OK;
+    }
+}
 
-    json_object_set_new(obj, key, json_integer(value));
+/*
+Set new value of json object
+    Input parameter:
+    jsRet: output json.
+    key: Object key that will be set to
+    value: the value will be set
+*/
+static inline uint8_t jsonObjectSetInterger(json_t *jsRet, const char *key, uint8_t value)
+{
+    json_t *jsValue;
+    jsValue = NULL;
 
-    *jsRet = obj;
+    if (!jsRet)
+    {
+        printf("Could not process with null object \n");
+        return RET_ERR;
+    }
+
+    jsValue = json_integer(value);
+    if(!jsValue)
+    {
+        printf("[%s-%d] could not process value to json interget \n", __func__, __LINE__);
+        return RET_ERR;
+    }
+
+    json_object_set_new(jsRet, key, jsValue);
+
     return RET_OK;
 }
 
@@ -216,7 +246,13 @@ void main()
     uint8_t ret;
     uint8_t tmp = 124;
 
-    ret = jsonCreateObject(&js_obj, "hello", tmp);
+    ret = jsonCreateObject(&js_obj);
+    if(RET_ERR == ret)
+    {
+        return;
+    }
+
+    ret = jsonObjectSetInterger(js_obj, "hello", tmp);
     if (ret == RET_OK)
     {
         buff = json_dumps(js_obj, 0);
